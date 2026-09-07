@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concrete Mix Design Calculator - IS 10262:2019 & IS 456:2000</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: { brand: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#16a34a', 600: '#166534', 700: '#14532d', 800: '#134e2b', 900: '#0f3d22' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        .ref-tag {
+            display: none;
+            margin-left: 5px;
+            font-size: 9px;
+            line-height: 1.2;
+            color: #475569;
+            font-weight: 500;
+        }
+        body.references-on .ref-tag { display: inline; }
+        .print-title { text-align: center; margin-bottom: 5mm; }
+        .print-title h1 { font-size: 18px; margin: 0; font-weight: 800; }
+        .print-title p { font-size: 9px; margin: 2px 0; }
+        .print-meta { display: flex; justify-content: space-between; font-size: 8px; border-bottom: 1px solid #999; padding-bottom: 2mm; }
+
+
+        :root { --ifm-color-primary:#166534; --ifm-color-primary-dark:#14532d; --ifm-color-primary-darker:#134e2b; --ifm-color-primary-darkest:#0f3d22; --ifm-color-primary-light:#15803d; --ifm-color-primary-lighter:#16a34a; --ifm-color-primary-lightest:#22c55e; --ifm-background-color:#fcfcfb; --ifm-background-surface-color:#ffffff; --ifm-font-color-base:#374151; --ifm-font-color-secondary:#6b7280; --ifm-heading-color:#1f2937; --ifm-code-font-size:95%; --docusaurus-highlighted-code-line-bg:rgba(0,0,0,.1); }
+        [data-theme='dark'] { --ifm-color-primary:#25c2a0; --ifm-color-primary-dark:#21af90; --ifm-color-primary-darker:#1fa588; --ifm-color-primary-darkest:#1a8870; --ifm-color-primary-light:#29d5b0; --ifm-color-primary-lighter:#32d8b4; --ifm-color-primary-lightest:#4fddbf; --ifm-background-color:#121212; --ifm-background-surface-color:#1b1b1d; --ifm-font-color-base:#e5e7eb; --ifm-font-color-secondary:#9ca3af; --ifm-heading-color:#fff; --docusaurus-highlighted-code-line-bg:rgba(0,0,0,.3); }
+        body{background-color:var(--ifm-background-color);color:var(--ifm-font-color-base)} h1,h2,h3,h4,h5,h6{color:var(--ifm-heading-color)}
+        .bg-brand-900{background-color:var(--ifm-color-primary-darkest)!important}.bg-brand-800{background-color:var(--ifm-color-primary-dark)!important}.bg-brand-700{background-color:var(--ifm-color-primary-darker)!important}.bg-brand-600{background-color:var(--ifm-color-primary)!important}.bg-brand-500{background-color:var(--ifm-color-primary-light)!important}.bg-brand-100{background-color:#dcfce7!important}.bg-brand-50{background-color:#f0fdf4!important}
+        .text-brand-900{color:var(--ifm-color-primary-darkest)!important}.text-brand-800{color:var(--ifm-color-primary-dark)!important}.text-brand-700{color:var(--ifm-color-primary-darker)!important}.text-brand-600{color:var(--ifm-color-primary)!important}.text-brand-500{color:var(--ifm-color-primary-light)!important}.border-brand-700{border-color:var(--ifm-color-primary-darker)!important}.border-brand-600{border-color:var(--ifm-color-primary)!important}.border-brand-200{border-color:#bbf7d0!important}.card-box,.bg-white{background-color:var(--ifm-background-surface-color)!important}
+        /* Print high contrast fix */
+
+
+        /* Refined responsive top bar controls */
+        header.bg-brand-900 {
+            background: #ffffff !important;
+            color: #1f2937 !important;
+        }
+        header.bg-brand-900 > div {
+            min-height: 64px;
+            height: auto;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            gap: 12px;
+        }
+        header.bg-brand-900 > div > div:last-child {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .app-header-control {
+            min-height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            border-radius: 9px;
+        }
+        .reference-control {
+            gap: 8px;
+            padding: 0 10px;
+            border: 1px solid #d1d5db;
+            background: #f8fafc;
+            color: #374151 !important;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .reference-control input {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            accent-color: #166534;
+        }
+        .reference-control span {
+            color: #374151 !important;
+        }
+        .print-control {
+            padding: 0 12px !important;
+            background: #166534 !important;
+            color: #ffffff !important;
+            border: 1px solid #166534;
+            min-width: 108px;
+        }
+        .print-control:hover {
+            background: #14532d !important;
+            border-color: #14532d;
+        }
+        .preset-control {
+            min-height: 36px;
+            background: #f8fafc !important;
+            color: #374151 !important;
+            border-color: #d1d5db !important;
+            max-width: 220px;
+        }
+        .howto-control {
+            background: #ffffff !important;
+            color: #166534 !important;
+            border: 1px solid #166534 !important;
+            min-height: 36px;
+        }
+        .howto-control:hover {
+            background: #f0fdf4 !important;
+        }
+
+        @media (max-width: 900px) {
+            header.bg-brand-900 > div {
+                align-items: flex-start;
+            }
+            header.bg-brand-900 > div > div:last-child {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            .preset-control { max-width: none; flex: 1 1 190px; }
+        }
+
+        @media (max-width: 520px) {
+            header.bg-brand-900 > div {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+            header.bg-brand-900 > div > div:first-child {
+                width: 100%;
+            }
+            header.bg-brand-900 > div > div:last-child {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                width: 100%;
+                gap: 7px;
+            }
+            .preset-control,
+            .howto-control {
+                width: 100%;
+                max-width: none;
+                grid-column: 1 / -1;
+            }
+            .reference-control,
+            .print-control {
+                width: 100%;
+            }
+            .print-control {
+                min-width: 0;
+            }
+        }
+
+        @media (max-width: 330px) {
+            header.bg-brand-900 > div > div:last-child {
+                grid-template-columns: 1fr;
+            }
+            .reference-control,
+            .print-control {
+                width: 100%;
+            }
+        }
+
+        @media print {
+            header.bg-brand-900 { display: none !important; }
+        }
+
+        @media print {
+            html, body {
+                background: #ffffff !important;
+                color: #1f2937 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            body, body * {
+                color: #1f2937 !important;
+            }
+            h1, h2, h3, h4, h5, h6,
+            .text-slate-800, .text-slate-700, .text-slate-600, .text-slate-500,
+            .text-slate-400, .text-slate-300,
+            .text-brand-900, .text-brand-800, .text-brand-700, .text-brand-600,
+            .text-brand-500 {
+                color: #1f2937 !important;
+            }
+            .bg-brand-900, .bg-brand-800, .bg-brand-700, .bg-brand-600,
+            .bg-brand-500 {
+                color: #ffffff !important;
+            }
+            table, th, td, p, span, label, div {
+                color: #1f2937 !important;
+            }
+            th {
+                color: #374151 !important;
+                background: #f3f4f6 !important;
+            }
+            .text-white { color: #ffffff !important; }
+        }
+
+        @media print {
+            /* Normal engineering report print: readable size, natural multi-page flow */
+            @page { size: A4 portrait; margin: 12mm; }
+            html, body { width: auto; height: auto; }
+            body {
+                background: white !important;
+                color: #111827 !important;
+                display: block !important;
+                font-size: 10pt !important;
+                line-height: 1.35 !important;
+            }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            #printSheet {
+                max-width: none !important;
+                width: auto !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            /* Print every tab sequentially instead of squeezing them into columns. */
+            .tab-panel,
+            .tab-panel.hidden { display: block !important; }
+            .grid.grid-cols-1.lg\:grid-cols-12 {
+                display: block !important;
+            }
+            .lg\:col-span-7,
+            .lg\:col-span-5 {
+                display: block !important;
+                width: auto !important;
+            }
+
+            .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 8mm !important; }
+            .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 6mm !important; }
+            .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 4mm !important; }
+
+            .card-box {
+                border: 1px solid #b8b8b8 !important;
+                box-shadow: none !important;
+                border-radius: 2mm !important;
+                padding: 5mm !important;
+                margin-bottom: 5mm !important;
+                break-inside: avoid;
+            }
+
+            .print-title {
+                margin-bottom: 6mm !important;
+                break-after: avoid;
+            }
+            .print-title h1 { font-size: 18pt !important; }
+            .print-title p { font-size: 9pt !important; }
+            .print-meta { font-size: 8pt !important; }
+
+            h2 {
+                font-size: 11pt !important;
+                line-height: 1.25 !important;
+                margin-bottom: 4mm !important;
+            }
+            h3 { font-size: 10pt !important; }
+            label { font-size: 9pt !important; margin-bottom: 2px !important; }
+            input, select {
+                font-size: 9pt !important;
+                padding: 2mm !important;
+                min-height: 0 !important;
+                background: white !important;
+            }
+            .text-xs { font-size: 8.5pt !important; }
+            .text-\[11px\] { font-size: 8pt !important; }
+            .text-\[10px\] { font-size: 8pt !important; }
+            table { font-size: 8.5pt !important; }
+            th, td { padding: 2.2mm !important; }
+            .ref-tag {
+                display: inline !important;
+                font-size: 7.5pt !important;
+                color: #374151 !important;
+            }
+
+            /* Keep each major calculation section readable; allow it to continue to the next page. */
+            #panel-design,
+            #panel-field,
+            #panel-audit { break-before: auto; }
+            #panel-field { break-before: page; }
+            #panel-audit { break-before: page; }
+            #auditContainer {
+                columns: 1 !important;
+                font-size: 8pt !important;
+                line-height: 1.35 !important;
+            }
+            #auditContainer > div { break-inside: avoid; }
+            .sticky { position: static !important; }
+            canvas { max-height: 70mm !important; }
+            .tab-panel > div,
+            .lg\:col-span-5 > div { break-inside: avoid; }
+
+            /* Show print-friendly form values without browser UI styling. */
+            button { display: none !important; }
+            .overflow-x-auto { overflow: visible !important; }
+            .grid.grid-cols-1.sm\:grid-cols-2,
+            .grid.grid-cols-2.sm\:grid-cols-4 {
+                break-inside: avoid;
+            }
+        }
+
+        .print-only { display: none; }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] { -moz-appearance: textfield; }
+    
+        /* White top navigation bar */
+        header.bg-brand-900 { background-color:#ffffff !important; color:#374151 !important; border-bottom:1px solid #e5e7eb; box-shadow:0 2px 8px rgba(0,0,0,.06) !important; }
+        header.bg-brand-900 .text-white { color:#1f2937 !important; }
+        header.bg-brand-900 .text-brand-100 { color:#6b7280 !important; }
+        header.bg-brand-900 .bg-brand-500 { background-color:#166534 !important; color:#ffffff !important; }
+        header.bg-brand-900 .bg-brand-800 { background-color:#f8fafc !important; color:#374151 !important; border-color:#d1d5db !important; }
+        header.bg-brand-900 .bg-emerald-600 { background-color:#166534 !important; }
+        header.bg-brand-900 .bg-emerald-600:hover { background-color:#14532d !important; }
+        @media print { header.bg-brand-900 { display:none !important; } }
+
+        /* Print Sheet button: preserve high-contrast white foreground on green */
+        header .print-sheet-btn,
+        header .print-sheet-btn.text-white,
+        header .print-sheet-btn svg {
+            color: #ffffff !important;
+        }
+
+        header .print-sheet-btn {
+            background-color: #166534 !important;
+            border-color: #14532d !important;
+        }
+
+        header .print-sheet-btn:hover {
+            background-color: #0f3d22 !important;
+            color: #ffffff !important;
+        }
+
+    </style>
+</head>
+<body class="h-full text-slate-800 font-sans antialiased flex flex-col">
+
+    <header class="bg-brand-900 text-white shadow-lg sticky top-0 z-50 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-brand-500 p-2 rounded-lg text-white font-bold text-xl">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Concrete Mix Design Suite</h1>
+                    <p class="text-xs text-brand-100 opacity-80">IS 10262:2019 / IS 456:2000 — preliminary design & trial-batch tool</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <select id="presetSelector" onchange="loadPreset(this.value)" class="preset-control app-header-control bg-brand-800 text-xs text-white border border-brand-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <option value="">-- Load Quick Preset --</option>
+                    <option value="M25_PUMP">M25 General Slab (Pumpable)</option>
+                    <option value="M30_PUMP">M30 Moderate Exposure (Pumpable)</option>
+                    <option value="M40_FLYASH">M40 Severe Exposure + 25% Fly Ash</option>
+                    <option value="M50_HIGH">M50 High Strength + Silica Fume</option>
+                </select>
+                <a href="#how-to-use" class="howto-control app-header-control bg-brand-800 hover:bg-brand-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg border border-brand-700 transition" title="Open the Concrete Mix Design App guide">
+                    How to Use
+                </a>
+                <label class="reference-control app-header-control cursor-pointer select-none">
+                    <input id="referenceToggle" type="checkbox" onchange="toggleReferences(this.checked)" class="accent-emerald-500 w-3.5 h-3.5">
+                    <span>Show References</span>
+                </label>
+                <button onclick="window.print()" class="print-sheet-btn bg-[#166534] hover:bg-[#0f3d22] text-white text-sm font-bold px-4 py-2 rounded-lg flex items-center gap-2 transition shadow-sm border border-[#14532d] focus:outline-none focus:ring-2 focus:ring-[#22c55e] focus:ring-offset-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    Print Sheet
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6" id="printSheet">
+        <div class="print-only print-title">
+            <h1>Concrete Mix Design Calculation Sheet</h1>
+            <p>IS 10262:2019 / IS 456:2000 / IS 383:2016 — Preliminary Design & Trial Batch Record</p>
+            <div class="print-meta"><span>Generated: <span id="printDate"></span></span><span>References: <span id="printRefStatus">Off</span></span></div>
+        </div>
+        
+        <!-- Tab Navigation -->
+        <div class="no-print border-b border-slate-200 mb-6 flex space-x-8 overflow-x-auto">
+            <button onclick="switchTab('design')" id="tab-design" class="tab-btn border-brand-600 text-brand-600 border-b-2 py-3 px-1 font-semibold text-sm flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-brand-100 text-brand-700 text-xs flex items-center justify-center font-bold">1</span>
+                Mix Design Parameters
+            </button>
+            <button onclick="switchTab('field')" id="tab-field" class="tab-btn border-transparent text-slate-500 hover:text-slate-700 border-b-2 py-3 px-1 font-semibold text-sm flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-slate-100 text-slate-700 text-xs flex items-center justify-center font-bold">2</span>
+                Field Moisture & Batching
+            </button>
+            <button onclick="switchTab('audit')" id="tab-audit" class="tab-btn border-transparent text-slate-500 hover:text-slate-700 border-b-2 py-3 px-1 font-semibold text-sm flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-slate-100 text-slate-700 text-xs flex items-center justify-center font-bold">3</span>
+                Step-by-Step Audit Log
+            </button>
+        </div>
+
+        <!-- MAIN GRID CONTAINER -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- LEFT INPUT PANEL (7 Cols on LG) -->
+            <div class="lg:col-span-7 space-y-6">
+
+                <!-- TAB 1: DESIGN PARAMETERS -->
+                <div id="panel-design" class="tab-panel space-y-6">
+                    
+                    <!-- Section 1: Concrete Grade & Environment -->
+                    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm card-box">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-brand-700 mb-4 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                            1. Structural & Environmental Specifications
+                        </h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Characteristic Grade (f<sub>ck</sub>)</label><span class="ref-tag" data-ref-for="inpGrade">[IS 10262:2019, Cl. 4; IS 456:2000, Table 5]</span>
+                                <select id="inpGrade" onchange="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                                    <option value="20">M20 (Standard)</option>
+                                    <option value="25">M25 (Standard)</option>
+                                    <option value="30" selected>M30 (Standard)</option>
+                                    <option value="35">M35 (Standard)</option>
+                                    <option value="40">M40 (Standard)</option>
+                                    <option value="45">M45 (Standard)</option>
+                                    <option value="50">M50 (Standard)</option>
+                                    <option value="55">M55 (High Strength)</option>
+                                    <option value="60">M60 (High Strength)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Exposure Condition (IS 456 Table 5)</label><span class="ref-tag" data-ref-for="inpExposure">[IS 456:2000, Table 5]</span>
+                                <select id="inpExposure" onchange="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                                    <option value="Mild">Mild</option>
+                                    <option value="Moderate" selected>Moderate</option>
+                                    <option value="Severe">Severe</option>
+                                    <option value="Very Severe">Very Severe</option>
+                                    <option value="Extreme">Extreme</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Concrete Type (IS 456 Table 5)</label><span class="ref-tag" data-ref-for="inpConcreteType">[IS 456:2000, Table 5]</span>
+                                <select id="inpConcreteType" onchange="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                                    <option value="RCC" selected>Reinforced Concrete (RCC)</option>
+                                    <option value="PCC">Plain Concrete (PCC)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Type of Cement</label><span class="ref-tag" data-ref-for="inpCementType">[IS 10262:2019; IS 4031 series]</span>
+                                <select id="inpCementType" onchange="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                                    <option value="OPC43">OPC 43 Grade</option>
+                                    <option value="OPC53" selected>OPC 53 Grade</option>
+                                    <option value="PPC">PPC (Portland Pozzolana)</option>
+                                    <option value="PSC">PSC (Portland Slag)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Placement & Method</label><span class="ref-tag" data-ref-for="inpPlacement">[IS 10262:2019, aggregate proportioning / placement considerations]</span>
+                                <select id="inpPlacement" onchange="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                                    <option value="PUMP" selected>Pumpable Concrete (-10% CA)</option>
+                                    <option value="NON_PUMP">Non-Pumpable / Direct Pour</option>
+                                    <option value="TREMIE">Tremie / Underwater</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Required Slump / Workability (mm)</label><span class="ref-tag" data-ref-for="inpSlump">[IS 10262:2019, Table 4; IS 1199 series]</span>
+                                <input type="number" id="inpSlump" value="100" step="5" oninput="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Quality Control Level</label><span class="ref-tag" data-ref-for="inpQC">[IS 10262:2019, Cl. 4.1 / quality control assumptions]</span>
+                                <select id="inpQC" onchange="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                                    <option value="GOOD" selected>Good (Site Supervision + Tested Materials)</option>
+                                    <option value="VERY_GOOD">Very Good (Strict Batching Plant QC)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Aggregates & Chemical Admixtures -->
+                    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm card-box">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-brand-700 mb-4 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                            2. Aggregate Grading & Admixtures
+                        </h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Max Nominal Aggregate Size (MSA)</label><span class="ref-tag" data-ref-for="inpMSA">[IS 10262:2019, Tables 4 & 5]</span>
+                                <select id="inpMSA" onchange="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                                    <option value="10">10 mm</option>
+                                    <option value="20" selected>20 mm</option>
+                                    <option value="40">40 mm</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Coarse Aggregate Type</label><span class="ref-tag" data-ref-for="inpCAType">[IS 10262:2019, Table 4]</span>
+                                <select id="inpCAType" onchange="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                                    <option value="CRUSHED" selected>Crushed Angular Aggregate</option>
+                                    <option value="SUB_ANGULAR">Sub-Angular Aggregate</option>
+                                    <option value="GRAVEL">Gravel / Rounded Aggregate</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Fine Aggregate Grading (IS 383)</label><span class="ref-tag" data-ref-for="inpFAZone">[IS 383:2016, grading zones; IS 10262:2019, Table 5]</span>
+                                <select id="inpFAZone" onchange="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                                    <option value="Zone I">Zone I (Coarse Sand)</option>
+                                    <option value="Zone II" selected>Zone II (Medium Sand / M-Sand)</option>
+                                    <option value="Zone III">Zone III (Fine Sand)</option>
+                                    <option value="Zone IV">Zone IV (Very Fine Sand)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Superplasticizer Water Reduction (%)</label><span class="ref-tag" data-ref-for="inpWaterRed">[IS 9103; manufacturer data; trial validation required]</span>
+                                <input type="number" id="inpWaterRed" value="20" min="0" max="30" step="1" oninput="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Admixture Dosage (% of cementitious)</label><span class="ref-tag" data-ref-for="inpAdmixDose">[IS 9103; manufacturer recommended dosage]</span>
+                                <input type="number" id="inpAdmixDose" value="1.0" min="0" max="3.0" step="0.1" oninput="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Initial Design W/C Ratio Target</label><span class="ref-tag" data-ref-for="inpTargetWC">[IS 10262:2019, Cl. 4.2; strength–w/c relationship and durability limit]</span>
+                                <input type="number" id="inpTargetWC" value="0.45" min="0.25" max="0.60" step="0.01" oninput="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Material Specific Gravities & SCM Replacement -->
+                    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm card-box">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-brand-700 mb-4 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                            3. Specific Gravities & SCM Blending
+                        </h2>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">Cement SG</label><span class="ref-tag" data-ref-for="sgCement">[IS 10262:2019, absolute volume method]</span>
+                                <input type="number" id="sgCement" value="3.15" step="0.01" oninput="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 text-xs font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">Coarse Agg SG</label><span class="ref-tag" data-ref-for="sgCA">[IS 10262:2019, absolute volume method]</span>
+                                <input type="number" id="sgCA" value="2.74" step="0.01" oninput="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 text-xs font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">Fine Agg SG</label><span class="ref-tag" data-ref-for="sgFA">[IS 10262:2019, absolute volume method]</span>
+                                <input type="number" id="sgFA" value="2.65" step="0.01" oninput="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 text-xs font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-500 mb-1">Admixture SG</label><span class="ref-tag" data-ref-for="sgAdmix">[IS 10262:2019, absolute volume method]</span>
+                                <input type="number" id="sgAdmix" value="1.15" step="0.01" oninput="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 text-xs font-mono">
+                            </div>
+                        </div>
+
+                        <!-- SCM Section -->
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-700">Supplementary Cementitious Material (SCM)</span><span class="ref-tag" data-ref-for="scm">[IS 10262:2019; applicable SCM standard]</span>
+                                <select id="inpSCMType" onchange="runCalculation()" class="text-xs border border-slate-300 rounded px-2 py-1">
+                                    <option value="NONE">None (100% OPC)</option>
+                                    <option value="FLY_ASH">Fly Ash (Flyash)</option>
+                                    <option value="GGBS">GGBS (Slag)</option>
+                                    <option value="SILICA_FUME">Silica Fume</option>
+                                </select>
+                            </div>
+
+                            <div id="scmControls" class="grid grid-cols-2 gap-3 hidden">
+                                <div>
+                                    <label class="block text-xs text-slate-500 mb-1">Replacement (% of Binder)</label><span class="ref-tag" data-ref-for="inpSCMPercent">[IS 10262:2019; project specification / SCM standard]</span>
+                                    <input type="number" id="inpSCMPercent" value="20" min="0" max="60" step="5" oninput="runCalculation()" class="w-full bg-white border border-slate-300 rounded p-1.5 text-xs font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-500 mb-1">SCM Specific Gravity</label><span class="ref-tag" data-ref-for="sgSCM">[IS 10262:2019, absolute volume method]</span>
+                                    <input type="number" id="sgSCM" value="2.20" step="0.01" oninput="runCalculation()" class="w-full bg-white border border-slate-300 rounded p-1.5 text-xs font-mono">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 1 Next Button -->
+                    <div class="flex justify-end pt-2">
+                        <button onclick="switchTab('field')" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-5 py-2.5 rounded-lg flex items-center gap-2 shadow-sm transition">
+                            Next: Field Moisture & Batching
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- TAB 2: FIELD MOISTURE & BATCHING -->
+                <div id="panel-field" class="tab-panel hidden space-y-6">
+                    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm card-box">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-brand-700 mb-2 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                            4. Aggregate Moisture & Absorption Correction
+                        </h2>
+                        <p class="text-xs text-slate-500 mb-4">Adjust design proportions for real-world site aggregate conditions (wet or dry aggregates).</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Coarse Aggregate -->
+                            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
+                                <span class="text-xs font-bold text-slate-700 block">Coarse Aggregate</span><span class="ref-tag" data-ref-for="caField">[IS 10262:2019, field moisture/absorption correction]</span>
+                                <div>
+                                    <label class="block text-xs text-slate-500">Water Absorption (%)</label><span class="ref-tag" data-ref-for="fldCAAbs">[IS 10262:2019, field moisture/absorption correction]</span>
+                                    <input type="number" id="fldCAAbs" value="0.5" step="0.1" oninput="runCalculation()" class="w-full border border-slate-300 rounded p-1.5 text-xs font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-500">Free Moisture Content (%)</label><span class="ref-tag" data-ref-for="fldCAMoist">[IS 10262:2019, field moisture/absorption correction]</span>
+                                    <input type="number" id="fldCAMoist" value="0.0" step="0.1" oninput="runCalculation()" class="w-full border border-slate-300 rounded p-1.5 text-xs font-mono">
+                                </div>
+                            </div>
+
+                            <!-- Fine Aggregate -->
+                            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
+                                <span class="text-xs font-bold text-slate-700 block">Fine Aggregate (Sand)</span><span class="ref-tag" data-ref-for="faField">[IS 10262:2019, field moisture/absorption correction]</span>
+                                <div>
+                                    <label class="block text-xs text-slate-500">Water Absorption (%)</label><span class="ref-tag" data-ref-for="fldFAAbs">[IS 10262:2019, field moisture/absorption correction]</span>
+                                    <input type="number" id="fldFAAbs" value="1.0" step="0.1" oninput="runCalculation()" class="w-full border border-slate-300 rounded p-1.5 text-xs font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-500">Free Moisture Content (%)</label><span class="ref-tag" data-ref-for="fldFAMoist">[IS 10262:2019, field moisture/absorption correction]</span>
+                                    <input type="number" id="fldFAMoist" value="2.0" step="0.1" oninput="runCalculation()" class="w-full border border-slate-300 rounded p-1.5 text-xs font-mono">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Trial Mix Volume Calculator Section -->
+                    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm card-box space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                            <h2 class="text-sm font-bold uppercase tracking-wider text-brand-700 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                5. Laboratory Trial Mix Volume & Batching
+                            </h2>
+                            <span class="text-xs text-brand-700 bg-brand-50 px-2 py-0.5 rounded font-mono font-semibold">
+                                IS 10262 Cl. 5 Batching
+                            </span>
+                        </div>
+
+                        <!-- Mold Volume Quick Estimator Helper -->
+                        <div class="bg-slate-50 p-3.5 rounded-lg border border-slate-200 space-y-3">
+                            <span class="text-xs font-bold text-slate-700 block">Quick Volume Estimator (Molds & Testing)</span>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                <div>
+                                    <label class="block text-[11px] text-slate-500">150mm Cubes</label><span class="ref-tag" data-ref-for="numCubes">[IS 516 series; laboratory testing requirement]</span>
+                                    <input type="number" id="numCubes" value="6" min="0" max="30" oninput="calcTrialVolumeFromMolds()" class="w-full bg-white border border-slate-300 rounded p-1.5 text-xs font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] text-slate-500">Cylinders (15x30cm)</label><span class="ref-tag" data-ref-for="numCylinders">[IS 516 series; laboratory testing requirement]</span>
+                                    <input type="number" id="numCylinders" value="0" min="0" max="20" oninput="calcTrialVolumeFromMolds()" class="w-full bg-white border border-slate-300 rounded p-1.5 text-xs font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] text-slate-500">Slump Test Extra</label><span class="ref-tag" data-ref-for="inclSlump">[IS 1199 series; trial-batch planning]</span>
+                                    <select id="inclSlump" onchange="calcTrialVolumeFromMolds()" class="w-full bg-white border border-slate-300 rounded p-1.5 text-xs">
+                                        <option value="6">Yes (+6 Liters)</option>
+                                        <option value="0">No</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] text-slate-500">Wastage / Extra (%)</label><span class="ref-tag" data-ref-for="wastagePct">[Project/laboratory batching practice; user-defined allowance]</span>
+                                    <input type="number" id="wastagePct" value="15" min="0" max="50" step="5" oninput="calcTrialVolumeFromMolds()" class="w-full bg-white border border-slate-300 rounded p-1.5 text-xs font-mono">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Target Trial Volume (m³)</label><span class="ref-tag" data-ref-for="inpTrialVol">[IS 10262:2019, trial mix / batching provisions]</span>
+                                <input type="number" id="inpTrialVol" value="0.030" step="0.001" min="0.001" oninput="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm font-mono font-bold text-brand-800">
+                                <span id="lblTrialLiters" class="text-[10px] text-slate-500 block mt-1">Equivalent: <strong>30.0 Liters</strong></span>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Batching Basis State</label><span class="ref-tag" data-ref-for="inpTrialBasis">[IS 10262:2019, SSD basis and field moisture correction]</span>
+                                <select id="inpTrialBasis" onchange="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-brand-500 transition">
+                                    <option value="FIELD" selected>Field Moisture Corrected Mass</option>
+                                    <option value="SSD">SSD Mass (Dry Lab Specimen)</option>
+                                </select>
+                                <span class="text-[10px] text-slate-400 block mt-1">Calculates exact weights for lab balance</span>
+                            </div>
+                        </div>
+
+                        <!-- Trial Mix Itemized Quantity Table -->
+                        <div class="border border-slate-200 rounded-lg overflow-hidden mt-3">
+                            <div class="bg-brand-900 text-white px-3 py-2 text-xs font-bold flex justify-between items-center">
+                                <span>Trial Batch Itemized Recipe (<span id="txtTrialVolHeader">0.030 m³ / 30.0 L</span>)</span>
+                                <span id="txtBasisTag" class="text-[10px] bg-brand-700 px-2 py-0.5 rounded font-normal">Field State</span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-xs text-left">
+                                    <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                                        <tr>
+                                            <th class="p-2.5">Material</th>
+                                            <th class="p-2.5 text-right">Mass (kg)</th>
+                                            <th class="p-2.5 text-right">Mass (Grams)</th>
+                                            <th class="p-2.5 text-right">Liquid Measure</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="trialRecipeBody" class="divide-y divide-slate-100 font-mono text-slate-800">
+                                        <!-- Dynamically generated rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 Navigation Buttons -->
+                    <div class="flex justify-between items-center pt-2">
+                        <button onclick="switchTab('design')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold px-4 py-2.5 rounded-lg flex items-center gap-2 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                            Back to Design Parameters
+                        </button>
+                        <button onclick="switchTab('audit')" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-5 py-2.5 rounded-lg flex items-center gap-2 shadow-sm transition">
+                            Next: View Audit Log
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 3: AUDIT LOG -->
+                <div id="panel-audit" class="tab-panel hidden space-y-4">
+                    <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm card-box">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-brand-700 mb-4 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                            6. Step-by-Step Audit Log
+                        </h2>
+                        <div id="auditContainer" class="space-y-3 font-mono text-xs text-slate-700">
+                            <!-- Calculation trace will be dynamically injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Step 3 Navigation Buttons -->
+                    <div class="flex justify-start pt-2">
+                        <button onclick="switchTab('field')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold px-4 py-2.5 rounded-lg flex items-center gap-2 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                            Back to Field Moisture & Batching
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT OUTPUT SUMMARY PANEL (5 Cols on LG) -->
+            <div class="lg:col-span-5 space-y-6">
+
+                <!-- Primary Summary Card -->
+                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-md card-box sticky top-20">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            7. Mix Proportion Summary (1 m³)
+                        </h2>
+                        <span id="badgeCompliance" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                            Checks Pending
+                        </span>
+                    </div>
+
+                    <!-- Target Strength Highlights -->
+                    <div class="grid grid-cols-2 gap-2 mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200 text-center">
+                        <div>
+                            <span class="text-[10px] text-slate-400 font-semibold block uppercase">Target Strength (f'<sub>ck</sub>)</span>
+                            <span id="resTargetFc" class="text-lg font-bold text-brand-700">38.25 N/mm²</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400 font-semibold block uppercase">Design W/C Ratio</span>
+                            <span id="resFinalWC" class="text-lg font-bold text-slate-800">0.45</span>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mb-3">*Automated checks cover the programmed durability limits and material-volume checks. Final mix proportions must be validated by laboratory trials and project specifications.</p>
+
+                    <!-- Main Proportions Table -->
+                    <div class="overflow-x-auto mb-4">
+                        <table class="w-full text-xs text-left">
+                            <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                                <tr>
+                                    <th class="p-2">Material</th>
+                                    <th class="p-2 text-right">SSD Mass (kg/m³)</th>
+                                    <th class="p-2 text-right">Field Mass (kg/m³)</th>
+                                    <th class="p-2 text-right">Ratio</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resTableBody" class="divide-y divide-slate-100 font-mono">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Ratio Pill -->
+                    <div class="bg-brand-50 border border-brand-200 rounded-lg p-2.5 text-center mb-4">
+                        <span class="text-[10px] text-brand-700 font-bold uppercase block mb-0.5">Design Mix Ratio (Binder : Sand : Agg : W/C)</span>
+                        <div id="resMixRatio" class="text-sm font-bold font-mono text-brand-900">
+                            1 : 1.78 : 2.85 @ 0.45 W/C
+                        </div>
+                    </div>
+
+                    <!-- Interactive Chart Container -->
+                    <div class="mb-4">
+                        <canvas id="mixChart" height="180"></canvas>
+                    </div>
+
+                    <!-- Batching Quantities Breakdown Accordion -->
+                    <div class="space-y-2 border-t border-slate-200 pt-3 text-xs">
+                        <div class="font-bold text-slate-700 flex justify-between items-center">
+                            <span>8. Batching Quantities & Trial Batch</span>
+                        </div>
+                        
+                        <!-- 50kg bag basis -->
+                        <div class="bg-slate-50 p-2.5 rounded border border-slate-200 font-mono text-[11px] space-y-1">
+                            <div class="font-bold text-brand-800 border-b pb-1 mb-1">Per 50 kg Bag of Cement/Binder:</div>
+                            <div class="flex justify-between"><span>Water:</span><span id="bagWater">22.5 L</span></div>
+                            <div class="flex justify-between"><span>Fine Aggregate (Sand):</span><span id="bagFA">89.0 kg</span></div>
+                            <div class="flex justify-between"><span>Coarse Aggregate:</span><span id="bagCA">142.5 kg</span></div>
+                            <div class="flex justify-between"><span>Admixture:</span><span id="bagAdmix">0.50 kg</span></div>
+                        </div>
+
+                        <!-- Trial Batch volume basis summary -->
+                        <div class="bg-emerald-50 p-2.5 rounded border border-emerald-200 font-mono text-[11px] space-y-1">
+                            <div class="font-bold text-emerald-800 border-b border-emerald-200 pb-1 mb-1">Trial Batch Summary (<span id="lblTrialVol">0.030</span> m³ / <span id="lblTrialVolL">30</span> L):</div>
+                            <div class="flex justify-between"><span>Total Binder:</span><span id="trialBinder">12.7 kg</span></div>
+                            <div class="flex justify-between"><span>Mixing Water:</span><span id="trialWater">5.7 L</span></div>
+                            <div class="flex justify-between"><span>Fine Aggregate:</span><span id="trialFA">22.7 kg</span></div>
+                            <div class="flex justify-between"><span>Coarse Aggregate:</span><span id="trialCA">36.3 kg</span></div>
+                            <div class="flex justify-between"><span>Chemical Admixture:</span><span id="trialAdmix">127 g</span></div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- HOW TO USE GUIDE -->
+    <section id="how-to-use" class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pb-10 no-print scroll-mt-20">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <div class="flex items-center justify-between gap-4 mb-5">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-wider text-brand-700">Guide</p>
+                    <h2 class="text-xl font-bold text-slate-900 mt-1">How to Use the Concrete Mix Design App</h2>
+                    <p class="text-sm text-slate-500 mt-1">Use this workflow for preliminary mix proportioning and laboratory trial batching.</p>
+                </div>
+                <a href="#" class="text-xs font-semibold text-brand-600 hover:text-brand-800">Back to top ↑</a>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="rounded-lg bg-slate-50 border border-slate-200 p-4">
+                    <div class="text-xs font-bold text-brand-700 mb-1">1. Enter Design Parameters</div>
+                    <p class="text-sm text-slate-600">Select concrete grade, exposure, cement, placement method, slump, aggregate size/grading, W/C target, admixture and material specific gravities.</p>
+                </div>
+                <div class="rounded-lg bg-slate-50 border border-slate-200 p-4">
+                    <div class="text-xs font-bold text-brand-700 mb-1">2. Check the Preliminary Mix</div>
+                    <p class="text-sm text-slate-600">Review target mean strength, durability limits, binder content, aggregate proportions and the 1 m³ mix summary on the right.</p>
+                </div>
+                <div class="rounded-lg bg-slate-50 border border-slate-200 p-4">
+                    <div class="text-xs font-bold text-brand-700 mb-1">3. Enter Field Conditions</div>
+                    <p class="text-sm text-slate-600">Enter aggregate absorption and free moisture so the SSD quantities can be converted into practical field batching quantities.</p>
+                </div>
+                <div class="rounded-lg bg-slate-50 border border-slate-200 p-4">
+                    <div class="text-xs font-bold text-brand-700 mb-1">4. Set Trial-Batch Volume</div>
+                    <p class="text-sm text-slate-600">Use the mold estimator or enter a laboratory trial volume directly. Choose Field Corrected or SSD batching basis as appropriate.</p>
+                </div>
+                <div class="rounded-lg bg-slate-50 border border-slate-200 p-4">
+                    <div class="text-xs font-bold text-brand-700 mb-1">5. Review the Audit Log</div>
+                    <p class="text-sm text-slate-600">Open Step 3 to inspect the calculation sequence and assumptions used to produce the mix quantities.</p>
+                </div>
+                <div class="rounded-lg bg-slate-50 border border-slate-200 p-4">
+                    <div class="text-xs font-bold text-brand-700 mb-1">6. Print the Calculation Sheet</div>
+                    <p class="text-sm text-slate-600">Use Print Sheet for a normal multi-page A4 engineering record. Turn on Show References when you want the standards/reference notes included.</p>
+                </div>
+            </div>
+            <div class="mt-5 p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800">
+                <strong>Important:</strong> This application supports preliminary mix proportioning and trial-batch preparation. Final proportions should be validated through laboratory trials, material test results and the applicable project specifications/codes before field use.
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Global state and Chart Instance
+        let myChart = null;
+
+        // Auto-calculate trial mix volume from specimen mold inputs
+        function calcTrialVolumeFromMolds() {
+            const numCubes = parseInt(document.getElementById('numCubes').value) || 0;
+            const numCylinders = parseInt(document.getElementById('numCylinders').value) || 0;
+            const slumpExtraL = parseFloat(document.getElementById('inclSlump').value) || 0;
+            const wastagePct = parseFloat(document.getElementById('wastagePct').value) || 0;
+
+            const volCubesL = numCubes * 3.375;
+            const volCylL = numCylinders * 5.301;
+            const subtotalL = volCubesL + volCylL + slumpExtraL;
+            const totalTrialL = subtotalL * (1 + wastagePct / 100);
+            
+            const trialVolM3 = totalTrialL / 1000;
+
+            const trialInput = document.getElementById('inpTrialVol');
+            trialInput.value = trialVolM3 > 0 ? trialVolM3.toFixed(3) : "0.010";
+
+            runCalculation();
+        }
+
+        // IS 10262:2019 Table 1 - Standard Deviation (s) and Factor X
+        function getSDAndX(fck) {
+            if (fck === 10 || fck === 15) return { s: 3.5, X: 5.0 };
+            if (fck === 20 || fck === 25) return { s: 4.0, X: 5.5 };
+            if (fck >= 30 && fck <= 50) return { s: 5.0, X: 6.5 };
+            if (fck >= 55) return { s: 6.0, X: 8.0 };
+            return { s: 5.0, X: 6.5 };
+        }
+
+        // IS 456:2000 Table 5 - Exposure Conditions for RCC
+        const IS456_Table5 = {
+            RCC: {
+                'Mild': { maxWC: 0.55, minCement: 300, minGrade: 20 },
+                'Moderate': { maxWC: 0.50, minCement: 300, minGrade: 25 },
+                'Severe': { maxWC: 0.45, minCement: 320, minGrade: 30 },
+                'Very Severe': { maxWC: 0.45, minCement: 340, minGrade: 35 },
+                'Extreme': { maxWC: 0.40, minCement: 360, minGrade: 40 }
+            },
+            PCC: {
+                'Mild': { maxWC: 0.60, minCement: 220, minGrade: null },
+                'Moderate': { maxWC: 0.60, minCement: 240, minGrade: 15 },
+                'Severe': { maxWC: 0.50, minCement: 250, minGrade: 20 },
+                'Very Severe': { maxWC: 0.45, minCement: 260, minGrade: 20 },
+                'Extreme': { maxWC: 0.40, minCement: 280, minGrade: 25 }
+            }
+        };
+
+        // IS 10262 Table 4 - Water Content for 50mm Slump
+        function getBaseWaterContent(msa, caType) {
+            let baseW = 186; // 20mm MSA default
+            if (msa === 10) baseW = 208;
+            if (msa === 40) baseW = 165;
+
+            // Shape reduction
+            if (caType === 'SUB_ANGULAR') baseW -= 10;
+            if (caType === 'GRAVEL') baseW -= 20;
+
+            return baseW;
+        }
+
+        // IS 10262 Table 5 - Coarse aggregate fraction per unit volume of total aggregate for w/c = 0.50
+        const CA_Table5 = {
+            10: { 'Zone I': 0.48, 'Zone II': 0.50, 'Zone III': 0.52, 'Zone IV': 0.54 },
+            20: { 'Zone I': 0.60, 'Zone II': 0.62, 'Zone III': 0.64, 'Zone IV': 0.66 },
+            40: { 'Zone I': 0.69, 'Zone II': 0.71, 'Zone III': 0.72, 'Zone IV': 0.73 }
+        };
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-panel').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-brand-600', 'text-brand-600');
+                btn.classList.add('border-transparent', 'text-slate-500');
+                const badge = btn.querySelector('span');
+                if (badge) {
+                    badge.classList.remove('bg-brand-100', 'text-brand-700');
+                    badge.classList.add('bg-slate-100', 'text-slate-700');
+                }
+            });
+
+            document.getElementById('panel-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('tab-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('border-transparent', 'text-slate-500');
+                activeBtn.classList.add('border-brand-600', 'text-brand-600');
+                const badge = activeBtn.querySelector('span');
+                if (badge) {
+                    badge.classList.remove('bg-slate-100', 'text-slate-700');
+                    badge.classList.add('bg-brand-100', 'text-brand-700');
+                }
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Preset Loader
+        function loadPreset(presetKey) {
+            if (!presetKey) return;
+            const scmTypeEl = document.getElementById('inpSCMType');
+
+            if (presetKey === 'M25_PUMP') {
+                document.getElementById('inpGrade').value = '25';
+                document.getElementById('inpExposure').value = 'Moderate';
+                document.getElementById('inpPlacement').value = 'PUMP';
+                document.getElementById('inpSlump').value = '100';
+                scmTypeEl.value = 'NONE';
+            } else if (presetKey === 'M30_PUMP') {
+                document.getElementById('inpGrade').value = '30';
+                document.getElementById('inpExposure').value = 'Moderate';
+                document.getElementById('inpPlacement').value = 'PUMP';
+                document.getElementById('inpSlump').value = '100';
+                scmTypeEl.value = 'NONE';
+            } else if (presetKey === 'M40_FLYASH') {
+                document.getElementById('inpGrade').value = '40';
+                document.getElementById('inpExposure').value = 'Severe';
+                document.getElementById('inpPlacement').value = 'PUMP';
+                document.getElementById('inpSlump').value = '120';
+                scmTypeEl.value = 'FLY_ASH';
+                document.getElementById('inpSCMPercent').value = '25';
+                document.getElementById('sgSCM').value = '2.20';
+            } else if (presetKey === 'M50_HIGH') {
+                document.getElementById('inpGrade').value = '50';
+                document.getElementById('inpExposure').value = 'Very Severe';
+                document.getElementById('inpPlacement').value = 'PUMP';
+                document.getElementById('inpSlump').value = '120';
+                scmTypeEl.value = 'SILICA_FUME';
+                document.getElementById('inpSCMPercent').value = '7.5';
+                document.getElementById('sgSCM').value = '2.20';
+            }
+
+            runCalculation();
+        }
+
+        function runCalculation() {
+            const audit = [];
+
+            // 1. Read Inputs
+            const fck = parseFloat(document.getElementById('inpGrade').value);
+            const exposure = document.getElementById('inpExposure').value;
+            const concreteType = document.getElementById('inpConcreteType').value;
+            const cementType = document.getElementById('inpCementType').value;
+            const placement = document.getElementById('inpPlacement').value;
+            const slump = parseFloat(document.getElementById('inpSlump').value) || 100;
+            const msa = parseInt(document.getElementById('inpMSA').value);
+            const caType = document.getElementById('inpCAType').value;
+            const faZone = document.getElementById('inpFAZone').value;
+            const waterRedPct = parseFloat(document.getElementById('inpWaterRed').value) / 100;
+            const admixDosePct = parseFloat(document.getElementById('inpAdmixDose').value) / 100;
+            const targetWCInput = parseFloat(document.getElementById('inpTargetWC').value);
+
+            const sgCement = parseFloat(document.getElementById('sgCement').value) || 3.15;
+            const sgCA = parseFloat(document.getElementById('sgCA').value) || 2.74;
+            const sgFA = parseFloat(document.getElementById('sgFA').value) || 2.65;
+            const sgAdmix = parseFloat(document.getElementById('sgAdmix').value) || 1.15;
+
+            // SCM
+            const scmType = document.getElementById('inpSCMType').value;
+            const scmControls = document.getElementById('scmControls');
+            let scmPct = 0;
+            let sgSCM = 2.20;
+
+            if (scmType !== 'NONE') {
+                scmControls.classList.remove('hidden');
+                scmPct = (parseFloat(document.getElementById('inpSCMPercent').value) || 0) / 100;
+                sgSCM = parseFloat(document.getElementById('sgSCM').value) || 2.20;
+            } else {
+                scmControls.classList.add('hidden');
+            }
+
+            // Field Conditions
+            const caAbs = (parseFloat(document.getElementById('fldCAAbs').value) || 0) / 100;
+            const caMoist = (parseFloat(document.getElementById('fldCAMoist').value) || 0) / 100;
+            const faAbs = (parseFloat(document.getElementById('fldFAAbs').value) || 0) / 100;
+            const faMoist = (parseFloat(document.getElementById('fldFAMoist').value) || 0) / 100;
+            const trialVol = parseFloat(document.getElementById('inpTrialVol').value) || 0.03;
+            const trialBasis = document.getElementById('inpTrialBasis') ? document.getElementById('inpTrialBasis').value : 'FIELD';
+
+            // --- STEP 1: Target Mean Strength ---
+            const { s, X } = getSDAndX(fck);
+            const target1 = fck + 1.65 * s;
+            const target2 = fck + X;
+            const targetFc = Math.max(target1, target2);
+
+            audit.push(`<strong>Step 1: Target Mean Strength (IS 10262 Cl 4.2)</strong>`);
+            audit.push(`• f'ck = max(fck + 1.65s, fck + X)`);
+            audit.push(`• Standard Deviation (s) = ${s} N/mm², Factor X = ${X}`);
+            audit.push(`• Target Strength = max(${target1.toFixed(2)}, ${target2.toFixed(2)}) = <strong>${targetFc.toFixed(2)} N/mm²</strong>`);
+
+            // --- STEP 2: Water-Cement Ratio ---
+            const expLimit = IS456_Table5[concreteType][exposure];
+            const designWC = Math.min(targetWCInput, expLimit.maxWC);
+            const gradeCheckOK = !expLimit.minGrade || fck >= expLimit.minGrade;
+
+            audit.push(`<br><strong>Step 2: Selection of W/C Ratio (IS 456 Table 5)</strong>`);
+            audit.push(`• Specified Exposure: ${exposure} → Max W/C Limit = ${expLimit.maxWC}`);
+            audit.push(`• Adopted W/C Ratio = <strong>${designWC.toFixed(2)}</strong>`);
+
+            // --- STEP 3: Water Content ---
+            const baseWater = getBaseWaterContent(msa, caType);
+            let slumpAdjustedWater = baseWater;
+
+            if (slump > 50) {
+                const extraSlump = slump - 50;
+                const incr = baseWater * (0.03 * (extraSlump / 25));
+                slumpAdjustedWater += incr;
+            }
+
+            const finalDesignWater = slumpAdjustedWater * (1 - waterRedPct);
+
+            audit.push(`<br><strong>Step 3: Calculation of Water Content (IS 10262 Table 4)</strong>`);
+            audit.push(`• Base Water (for 50mm slump, ${msa}mm MSA) = ${baseWater} kg/m³`);
+            if (slump > 50) audit.push(`• Slump Adjustment (+3% per extra 25mm for ${slump}mm) = +${(slumpAdjustedWater - baseWater).toFixed(1)} kg`);
+            audit.push(`• Chemical Admixture Reduction (${(waterRedPct*100).toFixed(0)}%) = <strong>${finalDesignWater.toFixed(1)} kg/m³</strong>`);
+
+            // --- STEP 4: Cementitious Content ---
+            let calcBinder = finalDesignWater / designWC;
+            
+            // Check minimum cement content limit
+            const minBinder = expLimit.minCement;
+            let finalBinder = Math.max(calcBinder, minBinder);
+            
+            let cementMass = finalBinder;
+            let scmMass = 0;
+
+            // Max cement content limit per IS 456 Cl 8.2.4.2 = 450 kg/m³ (excluding mineral admixtures)
+            if (cementMass > 450) {
+                audit.push(`⚠️ WARNING: OPC cement content (${cementMass.toFixed(1)} kg/m³) exceeds the 450 kg/m³ IS 456 limit; mineral admixtures are excluded from this check.`);
+            }
+            if (!gradeCheckOK) {
+                audit.push(`⚠️ WARNING: ${concreteType} minimum grade for ${exposure} exposure is M${expLimit.minGrade}; selected M${fck} does not satisfy the durability requirement.`);
+            }
+
+            if (scmType !== 'NONE') {
+                scmMass = finalBinder * scmPct;
+                cementMass = finalBinder - scmMass;
+            }
+
+            audit.push(`<br><strong>Step 4: Cementitious Material Content (IS 456 Cl 8.2.4.2)</strong>`);
+            audit.push(`• Calculated Binder = ${calcBinder.toFixed(1)} kg/m³ (Min required per Table 5: ${minBinder} kg/m³)`);
+            audit.push(`• Total Cementitious Content = <strong>${finalBinder.toFixed(1)} kg/m³</strong>`);
+            if (scmType !== 'NONE') {
+                audit.push(`  - OPC Cement (${((1-scmPct)*100).toFixed(0)}%): <strong>${cementMass.toFixed(1)} kg/m³</strong>`);
+                audit.push(`  - SCM (${scmType}, ${(scmPct*100).toFixed(0)}%): <strong>${scmMass.toFixed(1)} kg/m³</strong>`);
+            }
+
+            // --- STEP 5: Aggregate Proportions ---
+            let baseCAVol = CA_Table5[msa][faZone];
+            
+            // Adjustment for W/C (±0.01 for every ±0.05 change from 0.50)
+            const wcDiff = 0.50 - designWC;
+            const caWCAdj = (wcDiff / 0.05) * 0.01;
+            baseCAVol += caWCAdj;
+
+            // Adjustment for Placement (Pumpable -10%)
+            if (placement === 'PUMP') {
+                baseCAVol *= 0.90;
+            } else if (placement === 'TREMIE') {
+                baseCAVol *= 0.85;
+            }
+
+            const finalFAVol = 1.0 - baseCAVol;
+
+            audit.push(`<br><strong>Step 5: Coarse & Fine Aggregate Proportions (IS 10262 Table 5)</strong>`);
+            audit.push(`• Base CA Volume Fraction (W/C 0.50, ${faZone}) = ${CA_Table5[msa][faZone]}`);
+            audit.push(`• W/C Adjustment (${designWC.toFixed(2)} vs 0.50) = ${caWCAdj > 0 ? '+' : ''}${caWCAdj.toFixed(3)}`);
+            if (placement === 'PUMP') audit.push(`• Pumpability Adjustment = -10% CA Volume`);
+            audit.push(`• Final CA Volume Fraction = <strong>${(baseCAVol * 100).toFixed(1)}%</strong>`);
+            audit.push(`• Final FA Volume Fraction = <strong>${(finalFAVol * 100).toFixed(1)}%</strong>`);
+
+            // --- STEP 6: Absolute Volume Calculations ---
+            const entrappedAirVol = msa === 10 ? 0.010 : (msa === 20 ? 0.005 : 0.008);
+            const admixMass = finalBinder * admixDosePct;
+
+            const volAir = entrappedAirVol;
+            const volCement = cementMass / (sgCement * 1000);
+            const volSCM = scmMass > 0 ? scmMass / (sgSCM * 1000) : 0;
+            const volWater = finalDesignWater / 1000;
+            const volAdmix = admixMass / (sgAdmix * 1000);
+
+            const volTotalAgg = 1.0 - (volAir + volCement + volSCM + volWater + volAdmix);
+
+            const massCA_SSD = volTotalAgg * baseCAVol * sgCA * 1000;
+            const massFA_SSD = volTotalAgg * finalFAVol * sgFA * 1000;
+
+            audit.push(`<br><strong>Step 6: Absolute Volume Allocations (per 1 m³)</strong>`);
+            audit.push(`• Air Vol = ${volAir.toFixed(3)} m³ | Water Vol = ${volWater.toFixed(3)} m³ | Binder Vol = ${(volCement+volSCM).toFixed(3)} m³ | Admix Vol = ${volAdmix.toFixed(4)} m³`);
+            audit.push(`• Net Available Aggregate Volume = <strong>${volTotalAgg.toFixed(3)} m³</strong>`);
+            audit.push(`• Coarse Aggregate (SSD) Mass = <strong>${massCA_SSD.toFixed(1)} kg</strong>`);
+            audit.push(`• Fine Aggregate (SSD) Mass = <strong>${massFA_SSD.toFixed(1)} kg</strong>`);
+
+            // --- STEP 7: Field Moisture & Absorption Corrections ---
+            // Convert SSD masses to oven-dry basis, then apply measured field moisture.
+            // This avoids treating moisture/absorption percentages as if they were both based on SSD mass.
+            const caDryMass = massCA_SSD / (1 + caAbs);
+            const faDryMass = massFA_SSD / (1 + faAbs);
+            const caMoistExtra = caDryMass * caMoist;
+            const faMoistExtra = faDryMass * faMoist;
+            const caAbsWater = caDryMass * caAbs;
+            const faAbsWater = faDryMass * faAbs;
+            const massCA_Field = caDryMass * (1 + caMoist);
+            const massFA_Field = faDryMass * (1 + faMoist);
+
+            // Net water supplied/required by aggregate moisture relative to SSD condition.
+            const netWaterCorrection = (caMoistExtra + faMoistExtra) - (caAbsWater + faAbsWater);
+            const finalFieldWater = finalDesignWater - netWaterCorrection;
+
+            audit.push(`<br><strong>Step 7: Field Moisture & Absorption Correction</strong>`);
+            audit.push(`• CA Dry-basis moisture contribution = +${caMoistExtra.toFixed(1)} kg | SSD absorption deficit = -${caAbsWater.toFixed(1)} kg`);
+            audit.push(`• FA Dry-basis moisture contribution = +${faMoistExtra.toFixed(1)} kg | SSD absorption deficit = -${faAbsWater.toFixed(1)} kg`);
+            audit.push(`• Corrected Field Mixing Water = <strong>${finalFieldWater.toFixed(1)} kg/m³</strong>`);
+
+            // --- UPDATE DOM UI ELEMENTS ---
+
+            // Header Highlights
+            document.getElementById('resTargetFc').innerText = `${targetFc.toFixed(2)} N/mm²`;
+            document.getElementById('resFinalWC').innerText = designWC.toFixed(2);
+            const complianceOK = gradeCheckOK && cementMass <= 450 && finalFieldWater >= 0 && designWC <= expLimit.maxWC;
+            const badge = document.getElementById('badgeCompliance');
+            badge.innerText = complianceOK ? 'Checks OK*' : 'Review Required';
+            badge.className = complianceOK
+                ? 'text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800'
+                : 'text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800';
+
+            // Audit Log
+            document.getElementById('auditContainer').innerHTML = audit.map(line => `<div>${line}</div>`).join('');
+
+            // Proportions Table
+            const faRatio = (massFA_SSD / finalBinder).toFixed(2);
+            const caRatio = (massCA_SSD / finalBinder).toFixed(2);
+            document.getElementById('resMixRatio').innerText = `1 : ${faRatio} : ${caRatio} @ ${designWC.toFixed(2)} W/C`;
+
+            const resTableBody = document.getElementById('resTableBody');
+            resTableBody.innerHTML = `
+                <tr>
+                    <td class="p-2 font-semibold">Cement (OPC)</td>
+                    <td class="p-2 text-right">${cementMass.toFixed(1)}</td>
+                    <td class="p-2 text-right">${cementMass.toFixed(1)}</td>
+                    <td class="p-2 text-right">${(cementMass / finalBinder).toFixed(2)}</td>
+                </tr>
+                ${scmMass > 0 ? `
+                <tr>
+                    <td class="p-2 font-semibold text-brand-700">SCM (${scmType})</td>
+                    <td class="p-2 text-right">${scmMass.toFixed(1)}</td>
+                    <td class="p-2 text-right">${scmMass.toFixed(1)}</td>
+                    <td class="p-2 text-right">${(scmMass / finalBinder).toFixed(2)}</td>
+                </tr>
+                ` : ''}
+                <tr>
+                    <td class="p-2 font-semibold">Fine Agg (Sand)</td>
+                    <td class="p-2 text-right">${massFA_SSD.toFixed(1)}</td>
+                    <td class="p-2 text-right text-emerald-700 font-bold">${massFA_Field.toFixed(1)}</td>
+                    <td class="p-2 text-right">${faRatio}</td>
+                </tr>
+                <tr>
+                    <td class="p-2 font-semibold">Coarse Agg</td>
+                    <td class="p-2 text-right">${massCA_SSD.toFixed(1)}</td>
+                    <td class="p-2 text-right text-emerald-700 font-bold">${massCA_Field.toFixed(1)}</td>
+                    <td class="p-2 text-right">${caRatio}</td>
+                </tr>
+                <tr>
+                    <td class="p-2 font-semibold">Water</td>
+                    <td class="p-2 text-right">${finalDesignWater.toFixed(1)}</td>
+                    <td class="p-2 text-right text-emerald-700 font-bold">${finalFieldWater.toFixed(1)}</td>
+                    <td class="p-2 text-right">${designWC.toFixed(2)}</td>
+                </tr>
+                <tr>
+                    <td class="p-2 font-semibold">Chemical Admix</td>
+                    <td class="p-2 text-right">${admixMass.toFixed(2)}</td>
+                    <td class="p-2 text-right">${admixMass.toFixed(2)}</td>
+                    <td class="p-2 text-right">${(admixDosePct*100).toFixed(1)}%</td>
+                </tr>
+            `;
+
+            // Bag Basis Calculations (50kg cement)
+            const bagFactor = 50 / finalBinder;
+            document.getElementById('bagWater').innerText = `${(finalFieldWater * bagFactor).toFixed(1)} L`;
+            document.getElementById('bagFA').innerText = `${(massFA_Field * bagFactor).toFixed(1)} kg`;
+            document.getElementById('bagCA').innerText = `${(massCA_Field * bagFactor).toFixed(1)} kg`;
+            document.getElementById('bagAdmix').innerText = `${(admixMass * bagFactor).toFixed(2)} kg`;
+
+            // Trial Volume Calculations & Labels
+            const trialVolLiters = (trialVol * 1000).toFixed(1);
+            if (document.getElementById('lblTrialLiters')) {
+                document.getElementById('lblTrialLiters').innerHTML = `Equivalent: <strong>${trialVolLiters} Liters</strong>`;
+            }
+            document.getElementById('lblTrialVol').innerText = trialVol.toFixed(3);
+            if (document.getElementById('lblTrialVolL')) {
+                document.getElementById('lblTrialVolL').innerText = trialVolLiters;
+            }
+
+            // Choose basis for trial batch table
+            const tFA = trialBasis === 'SSD' ? massFA_SSD : massFA_Field;
+            const tCA = trialBasis === 'SSD' ? massCA_SSD : massCA_Field;
+            const tWater = trialBasis === 'SSD' ? finalDesignWater : finalFieldWater;
+
+            const trialCementKg = cementMass * trialVol;
+            const trialSCMKg = scmMass * trialVol;
+            const trialBinderKg = finalBinder * trialVol;
+            const trialWaterL = tWater * trialVol;
+            const trialFAKg = tFA * trialVol;
+            const trialCAKg = tCA * trialVol;
+            const trialAdmixKg = admixMass * trialVol;
+
+            // Summary card metrics
+            document.getElementById('trialBinder').innerText = `${trialBinderKg.toFixed(2)} kg`;
+            document.getElementById('trialWater').innerText = `${trialWaterL.toFixed(2)} L`;
+            document.getElementById('trialFA').innerText = `${trialFAKg.toFixed(2)} kg`;
+            document.getElementById('trialCA').innerText = `${trialCAKg.toFixed(2)} kg`;
+            document.getElementById('trialAdmix').innerText = `${(trialAdmixKg * 1000).toFixed(0)} g`;
+
+            // Populate Detailed Trial Recipe Table
+            if (document.getElementById('trialRecipeBody')) {
+                document.getElementById('txtTrialVolHeader').innerText = `${trialVol.toFixed(3)} m³ / ${trialVolLiters} Liters`;
+                document.getElementById('txtBasisTag').innerText = trialBasis === 'SSD' ? 'SSD Condition' : 'Field Corrected';
+
+                let recipeHTML = `
+                    <tr>
+                        <td class="p-2.5 font-bold text-brand-900">Cement (OPC)</td>
+                        <td class="p-2.5 text-right font-bold">${trialCementKg.toFixed(3)}</td>
+                        <td class="p-2.5 text-right font-bold text-brand-700">${(trialCementKg * 1000).toFixed(0)} g</td>
+                        <td class="p-2.5 text-right text-slate-400">—</td>
+                    </tr>
+                `;
+
+                if (scmMass > 0) {
+                    recipeHTML += `
+                        <tr>
+                            <td class="p-2.5 font-bold text-brand-700">SCM (${scmType})</td>
+                            <td class="p-2.5 text-right font-bold">${trialSCMKg.toFixed(3)}</td>
+                            <td class="p-2.5 text-right font-bold text-brand-700">${(trialSCMKg * 1000).toFixed(0)} g</td>
+                            <td class="p-2.5 text-right text-slate-400">—</td>
+                        </tr>
+                    `;
+                }
+
+                recipeHTML += `
+                    <tr>
+                        <td class="p-2.5 font-semibold">Fine Aggregate (Sand)</td>
+                        <td class="p-2.5 text-right">${trialFAKg.toFixed(3)}</td>
+                        <td class="p-2.5 text-right text-emerald-700 font-bold">${(trialFAKg * 1000).toFixed(0)} g</td>
+                        <td class="p-2.5 text-right text-slate-400">—</td>
+                    </tr>
+                    <tr>
+                        <td class="p-2.5 font-semibold">Coarse Aggregate</td>
+                        <td class="p-2.5 text-right">${trialCAKg.toFixed(3)}</td>
+                        <td class="p-2.5 text-right text-emerald-700 font-bold">${(trialCAKg * 1000).toFixed(0)} g</td>
+                        <td class="p-2.5 text-right text-slate-400">—</td>
+                    </tr>
+                    <tr>
+                        <td class="p-2.5 font-semibold">Mixing Water</td>
+                        <td class="p-2.5 text-right">${trialWaterL.toFixed(3)}</td>
+                        <td class="p-2.5 text-right text-emerald-700 font-bold">${(trialWaterL * 1000).toFixed(0)} g</td>
+                        <td class="p-2.5 text-right text-brand-800 font-bold">${trialWaterL.toFixed(3)} L / ${(trialWaterL * 1000).toFixed(0)} mL</td>
+                    </tr>
+                    <tr>
+                        <td class="p-2.5 font-semibold">Chemical Admixture</td>
+                        <td class="p-2.5 text-right">${trialAdmixKg.toFixed(4)}</td>
+                        <td class="p-2.5 text-right text-purple-700 font-bold">${(trialAdmixKg * 1000).toFixed(1)} g</td>
+                        <td class="p-2.5 text-right text-purple-800 font-bold">${(trialAdmixKg / sgAdmix * 1000).toFixed(1)} mL</td>
+                    </tr>
+                    <tr class="bg-slate-50 font-bold border-t border-slate-300">
+                        <td class="p-2.5 text-slate-900">Total Trial Batch Weight</td>
+                        <td class="p-2.5 text-right text-brand-900">${(trialBinderKg + trialFAKg + trialCAKg + trialWaterL + trialAdmixKg).toFixed(2)} kg</td>
+                        <td class="p-2.5 text-right text-brand-900">${((trialBinderKg + trialFAKg + trialCAKg + trialWaterL + trialAdmixKg) * 1000).toFixed(0)} g</td>
+                        <td class="p-2.5 text-right text-slate-400">—</td>
+                    </tr>
+                `;
+
+                document.getElementById('trialRecipeBody').innerHTML = recipeHTML;
+            }
+
+            // Update Interactive Chart
+            updateChart([cementMass, scmMass, massFA_SSD, massCA_SSD, finalDesignWater]);
+        }
+
+        // Chart Renderer
+        function updateChart(dataValues) {
+            const ctx = document.getElementById('mixChart').getContext('2d');
+            
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cement', 'SCM', 'Fine Agg (Sand)', 'Coarse Agg', 'Water'],
+                    datasets: [{
+                        data: dataValues,
+                        backgroundColor: [
+                            '#1e40af', // Cement
+                            '#3b82f6', // SCM
+                            '#f59e0b', // Sand
+                            '#64748b', // Coarse Agg
+                            '#06b6d4'  // Water
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 10 },
+                                boxWidth: 12
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.label}: ${context.raw.toFixed(1)} kg/m³`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Reference visibility and print helpers
+        function toggleReferences(show) {
+            document.body.classList.toggle('references-on', !!show);
+            const status = document.getElementById('printRefStatus');
+            if (status) status.textContent = show ? 'On' : 'Off';
+            try { localStorage.setItem('mixDesignShowReferences', show ? '1' : '0'); } catch (e) {}
+        }
+
+        function initializeReferences() {
+            let show = false;
+            try { show = localStorage.getItem('mixDesignShowReferences') === '1'; } catch (e) {}
+            const toggle = document.getElementById('referenceToggle');
+            if (toggle) toggle.checked = show;
+            toggleReferences(show);
+            const d = document.getElementById('printDate');
+            if (d) d.textContent = new Date().toLocaleString();
+        }
+
+        // Initialize App on load
+        window.onload = function() {
+            initializeReferences();
+            runCalculation();
+        };
+    </script>
+</body>
+</html>
